@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="page-title">Royal Stitch - نظام إدارة الإنتاج المطور</title>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #1e293b;
+            --primary-light: #334155;
+            --accent: #2563eb;
+            --accent-hover: #1d4ed8;
+            --success: #16a34a;
+            --danger: #dc2626;
+            --warning: #ca8a04;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --radius: 12px;
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            padding-bottom: 40px;
+        }
+
+        /* الهيدر ونظام التنقل المتجاوب */
+        .navbar {
+            background-color: var(--primary);
+            color: white;
+            padding: 15px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .navbar .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .navbar img {
+            height: 50px;
+            width: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: white;
+            border: 2px solid var(--accent);
+        }
+
+        .navbar .brand-text {
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-badge {
+            background-color: var(--primary-light);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        /* الحاويات الرئيسية */
+        .container {
+            max-width: 1280px;
+            margin: 24px auto;
+            padding: 0 20px;
+        }
+
+        /* لوحة تسجيل الدخول */
+        .login-box {
+            max-width: 450px;
+            margin: 80px auto;
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border);
+        }
+
+        .login-box h2 {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 8px;
+            font-size: 26px;
+        }
+
+        /* رسالة الإعلان */
+        .broadcast-banner {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: white;
+            padding: 16px 20px;
+            border-radius: var(--radius);
+            margin-bottom: 24px;
+            font-weight: 600;
+            box-shadow: var(--shadow);
+            display: none;
+            border-right: 6px solid #f59e0b;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* الإحصائيات العلوية */
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            padding: 24px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            border-right: 5px solid var(--accent);
+            transition: transform 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .stat-card.paid { border-right-color: var(--success); }
+        .stat-card.remain { border-right-color: var(--danger); }
+
+        .stat-card h3 {
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .stat-card p {
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        /* أشرطة التنقل (التابات) */
+        .tabs-nav {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 8px;
+            overflow-x: auto;
+            scrollbar-width: thin;
+        }
+
+        .tab-link {
+            cursor: pointer;
+            padding: 10px 20px;
+            font-weight: 600;
+            color: var(--text-muted);
+            border-radius: 8px;
+            white-space: nowrap;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tab-link:hover {
+            background-color: var(--border);
+            color: var(--primary);
+        }
+
+        .tab-link.active {
+            background-color: var(--accent);
+            color: white;
+        }
+
+        /* أدوات التحكم والبحث المتطور */
+        .search-control-box {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+            border: 1px solid var(--border);
+        }
+
+        .search-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+        }
+
+        /* الجداول واستجابتها للهواتف */
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: right;
+        }
+
+        table th, table td {
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+            font-size: 15px;
+        }
+
+        table th {
+            background-color: #f1f5f9;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        table tr:hover {
+            background-color: #f8fafc;
+        }
+
+        /* النماذج والمدخلات */
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--primary);
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 15px;
+            background-color: #fff;
+            color: var(--text);
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        /* الأزرار الاحترافية */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 15px;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        .btn:hover { background-color: var(--accent-hover); }
+        .btn:active { transform: scale(0.98); }
+        .btn-danger { background-color: var(--danger); }
+        .btn-danger:hover { background-color: #b91c1c; }
+        .btn-warning { background-color: var(--warning); }
+        .btn-warning:hover { background-color: #a16207; }
+        .btn-success { background-color: var(--success); }
+        .btn-success:hover { background-color: #15803d; }
+        .btn-sm { padding: 6px 12px; font-size: 13px; border-radius: 6px; }
+
+        .actions-cell {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .main-panel { display: none; }
+        .tab-section { display: none; background: var(--card-bg); padding: 24px; border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid var(--border); }
+        .active-tab { display: block; }
+
+        /* شاشات الهواتف الصغيرة */
+        @media (max-width: 768px) {
+            .navbar { flex-direction: column; gap: 12px; text-align: center; }
+            .tabs-nav { padding-bottom: 12px; }
+            table th, table td { padding: 12px 8px; font-size: 13px; }
+            .btn { width: 100%; justify-content: center; }
+            .actions-cell { flex-direction: column; width: 100%; }
+            .actions-cell .btn { width: 100%; }
+        }
+
+        @media print {
+            body * { visibility: hidden; }
+            #print-area, #print-area * { visibility: visible; }
+            #print-area { position: absolute; left: 0; top: 0; width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="login-container" class="login-box">
+        <h2>Royal Stitch</h2>
+        <p style="text-align:center; font-size:14px; color:var(--text-muted); margin-bottom: 24px;">نظام إدارة مصانع الملابس الذكي</p>
+        <div class="form-group">
+            <label><i class="fa-solid fa-user"></i> اسم المستخدم</label>
+            <input type="text" id="login-user" placeholder="أدخل اسمك المسجل">
+        </div>
+        <div class="form-group">
+            <label><i class="fa-solid fa-lock"></i> كلمة المرور</label>
+            <input type="password" id="login-pass" placeholder="أدخل كلمة السر">
+        </div>
+        <button class="btn" style="width: 100%;" onclick="handleLogin()"><i class="fa-solid fa-right-to-bracket"></i> دخول للنظام</button>
+    </div>
+
+    <div id="main-container" class="main-panel">
+        <nav class="navbar">
+            <div class="brand">
+                <img id="nav-logo" src="" alt="شعار المصنع" style="display:none;">
+                <span id="nav-brand-name" class="brand-text">Royal Stitch</span>
+            </div>
+            <div class="user-menu">
+                <span id="user-display-name" class="user-badge"></span>
+                <button class="btn btn-danger btn-sm" onclick="handleLogout()"><i class="fa-solid fa-power-off"></i> خروج</button>
+            </div>
+        </nav>
+
+        <div class="container">
+            <div id="broadcast-bar" class="broadcast-banner"></div>
+
+            <div class="dashboard-stats" id="stats-bar" style="display:none;">
+                <div class="stat-card">
+                    <h3>إجمالي قطع الموديلات الجارية</h3>
+                    <p id="stat-total-pieces">0 قطعة</p>
+                </div>
+                <div class="stat-card paid">
+                    <h3>إجمالي المبالغ المدفوعة (الواصل)</h3>
+                    <p id="stat-total-paid">0 ج.م</p>
+                </div>
+                <div class="stat-card remain">
+                    <h3>إجمالي المتبقي الكلي للعمال</h3>
+                    <p id="stat-total-remaining">0 ج.م</p>
+                </div>
+            </div>
+
+            <div class="tabs-nav" id="tabs-navigation">
+                <div class="tab-link active" onclick="switchTab('worker-view-tab')" id="nav-worker-view"><i class="fa-solid fa-table-list"></i> كشف الحساب والإنتاج</div>
+                <div class="tab-link" onclick="switchTab('input-data-tab')" id="nav-input-data" style="display:none;"><i class="fa-solid fa-circle-plus"></i> تسجيل الإنتاج اليومي</div>
+                <div class="tab-link" onclick="switchTab('manage-accounts-tab')" id="nav-manage-accounts" style="display:none;"><i class="fa-solid fa-users-gear"></i> إدارة الحسابات والعمال</div>
+                <div class="tab-link" onclick="switchTab('archive-tab')" id="nav-archive" style="display:none;"><i class="fa-solid fa-box-archive"></i> الأرشيف وتصدير Excel</div>
+                <div class="tab-link" onclick="switchTab('settings-tab')" id="nav-settings" style="display:none;"><i class="fa-solid fa-sliders"></i> خصائص وهوية المصنع</div>
+            </div>
+
+            <div id="worker-view-tab" class="tab-section active-tab">
+                <h2 style="color:var(--primary); margin-bottom:15px;"><i class="fa-solid fa-file-invoice-dollar"></i> سجلات الإنتاج الجارية للحساب</h2>
+                
+                <div id="group-info-block" style="background:#e0f2fe; padding:16px; border-radius:var(--radius); margin-bottom:20px; display:none; border-right:4px solid var(--accent); font-weight:600;"></div>
+                
+                <div class="search-control-box">
+                    <h4 style="margin-bottom: 12px; color: var(--primary-light);"><i class="fa-solid fa-magnifying-glass"></i> أدوات جرد وتصفية البيانات السريعة</h4>
+                    <div class="search-grid">
+                        <div class="form-group" style="margin-bottom:0;" id="search-worker-block">
+                            <label>🔍 بحث باسم العامل</label>
+                            <input type="text" id="search-worker" placeholder="اكتب اسم العامل هنا..." oninput="renderStatsAndTables()">
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label>🔍 بحث بالموديل</label>
+                            <input type="text" id="search-model" placeholder="اكتب اسم الموديل..." oninput="renderStatsAndTables()">
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label>🔍 بحث بالتاريخ</label>
+                            <input type="date" id="search-date" onchange="renderStatsAndTables()">
+                        </div>
+                    </div>
+                    <button class="btn btn-warning btn-sm" style="margin-top: 15px; width: auto;" onclick="clearSearchFilters()"><i class="fa-solid fa-filter-circle-xmark"></i> إعادة تعيين الفلاتر</button>
+                </div>
+
+                <div class="table-responsive">
+                    <table id="worker-table">
+                        <thead>
+                            <tr>
+                                <th>الموديل / اسم العامل</th>
+                                <th>القطع المنتجة</th>
+                                <th>الواصل (المدفوع)</th>
+                                <th>المتبقي الكلي</th>
+                                <th>التاريخ والوقت</th>
+                                <th>بواسطة</th>
+                                <th>الإجراءات والتحكم</th>
+                            </tr>
+                        </thead>
+                        <tbody id="worker-data-rows"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="input-data-tab" class="tab-section">
+                <h2 style="color:var(--primary); margin-bottom:20px;" id="form-tab-title"><i class="fa-solid fa-folder-plus"></i> إدخال جذاذة إنتاج جديدة لعامل أو خط</h2>
+                <form id="production-form" onsubmit="saveProduction(event)">
+                    <input type="hidden" id="edit-record-id" value="">
+                    <div class="form-group">
+                        <label>اختر العامل المستهدف أو المجموعة</label>
+                        <select id="prod-worker-select" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label>اسم الموديل التشغيلي</label>
+                        <input type="text" id="prod-model" required placeholder="مثال: فستان ستان فرنسي">
+                    </div>
+                    <div class="form-group">
+                        <label>عدد القطع المنتجة</label>
+                        <input type="number" id="prod-pieces" required min="1" oninput="calculateRemaining()">
+                    </div>
+                    <div class="form-group">
+                        <label>سعر القطعة للعامل (ج.م)</label>
+                        <input type="number" id="prod-price-per-piece" required min="0" oninput="calculateRemaining()" placeholder="أدخل تكلفة إنتاج القطعة الواحدة">
+                    </div>
+                    <div class="form-group">
+                        <label>المبلغ الواصل (المدفوع حالياً)</label>
+                        <input type="number" id="prod-paid" required min="0" oninput="calculateRemaining()" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label>المبلغ المتبقي للعامل (يُحسب تلقائياً)</label>
+                        <input type="number" id="prod-remaining" required min="0" readonly style="background:#fef08a; font-weight:bold;">
+                    </div>
+                    <div style="display:flex; gap:10px;">
+                        <button type="submit" class="btn id="submit-prod-btn" style="flex:1;"><i class="fa-solid fa-floppy-disk"></i> تثبيت البيانات وتحديث الحساب</button>
+                        <button type="button" class="btn btn-danger" id="cancel-edit-btn" style="display:none;" onclick="cancelEditMode()">إلغاء التعديل</button>
+                    </div>
+                </form>
+            </div>
+
+            <div id="manage-accounts-tab" class="tab-section">
+                <h2 style="color:var(--primary); margin-bottom:20px;"><i class="fa-solid fa-user-plus"></i> إنشاء وتخصيص حسابات المصنع</h2>
+                <div class="form-group">
+                    <label>نوع الحساب المراد تفعيله</label>
+                    <select id="acc-role" onchange="toggleGroupInput()">
+                        <option value="worker_individual">عامل إنتاج فردي</option>
+                        <option value="worker_group">مجموعة إنتاجية (ورشة عمل / خط مشترك)</option>
+                        <option value="supervisor">مشرف نظام (إدخال بيانات ورصد الموديلات)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>الاسم المخول للدخول بالنظام</label>
+                    <input type="text" id="acc-username" placeholder="الاسم الشخصي أو اسم الخط">
+                </div>
+                <div class="form-group">
+                    <label>كلمة المرور الخاصة به</label>
+                    <input type="text" id="acc-password" placeholder="أدخل كلمة سر الحساب">
+                </div>
+                <div id="group-members-field" class="form-group" style="display:none;">
+                    <label>أسماء أعضاء المجموعة بالكامل (يرجى الفصل بين كل اسم بفاصلة ,)</label>
+                    <input type="text" id="acc-members" placeholder="مثال: محمود, أحمد الإسكندراني, سيد">
+                </div>
+                <button class="btn" style="margin-bottom:30px;" onclick="createUserAccount()"><i class="fa-solid fa-user-check"></i> إنشاء الحساب وتفعيله فوراً</button>
+
+                <h3 style="color:var(--primary); margin-bottom:15px; border-top:2px dashed var(--border); padding-top:20px;"><i class="fa-solid fa-users-viewfinder"></i> الحسابات النشطة الحالية (يمكن حذف الأكونتات من هنا)</h3>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>الاسم</th>
+                                <th>نوع الصلاحية</th>
+                                <th>كلمة المرور</th>
+                                <th>الأعضاء (للمجموعات)</th>
+                                <th>التحكم</th>
+                            </tr>
+                        </thead>
+                        <tbody id="system-users-rows"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="archive-tab" class="tab-section">
+                <h2 style="color:var(--primary); margin-bottom:15px;"><i class="fa-solid fa-hourglass-end"></i> ترحيل الأسبوع برمجياً</h2>
+                <p style="color:var(--text-muted); margin-bottom:15px;">عند نهاية الأسبوع الإنتاجي، يرجى الضغط على الزر لتصفير الجدول وترحيل كشوفات الأيام والتواريخ بالكامل لتوليد زر أرشيف مستقل.</p>
+                <button class="btn btn-success" onclick="closeAndArchiveWeek()"><i class="fa-solid fa-folder-closed"></i> إغلاق الحسابات الحالية وتوليد زر أرشفة جديد</button>
+                
+                <h3 style="margin-top:30px; border-top: 1px solid var(--border); padding-top:20px; color:var(--primary);"><i class="fa-solid fa-boxes-stacked"></i> ملفات الأراشيف المجمّدة للأسابيع السابقة</h3>
+                <div id="weeks-buttons-container" style="display:flex; gap:10px; flex-wrap:wrap; margin-top:15px;"></div>
+                
+                <h3 style="margin-top:30px; color:var(--primary);"><i class="fa-solid fa-file-excel"></i> تحميل تقارير المالك الإدارية Excel 2016</h3>
+                <button class="btn" onclick="exportCurrentWeekToExcel()" style="background-color:#1e3a8a;"><i class="fa-solid fa-download"></i> تحميل كشف الأسبوع الحالي الإجمالي Excel 2016</button>
+            </div>
+
+            <div id="settings-tab" class="tab-section">
+                <h2 style="color:var(--primary); margin-bottom:20px;"><i class="fa-solid fa-gears"></i> تخصيص هوية المصنع واللوحة العامة</h2>
+                <div class="form-group">
+                    <label>تغيير اسم الموقع / المصنع</label>
+                    <input type="text" id="set-site-name" value="Royal Stitch">
+                </div>
+                <div class="form-group">
+                    <label>تحديث شعار المصنع (يتم رفعه وحفظه داخلياً Base64)</label>
+                    <input type="file" id="set-logo-file" accept="image/*">
+                </div>
+                <div class="form-group">
+                    <label>إنشاء رسالة إعلانية مرتبة وموجهة للعمال (تظهر للجميع في لوحة الحساب)</label>
+                    <textarea id="set-broadcast" rows="4" placeholder="مثال: يرجى تسليم جذاذات إنتاج موديل الفساتين الشيفون قبل يوم الخميس..."></textarea>
+                </div>
+                <button class="btn" onclick="saveSettings()"><i class="fa-solid fa-square-check"></i> حفظ وتحديث الإعدادات الشاملة</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="print-area" style="display:none;"></div>
+
+    <script>
+        const databaseURL = "https://mama-c6e6b-default-rtdb.firebaseio.com/";
+        let currentUser = null;
+        let globalData = {};
+
+        async function fetchDB(path = "") {
+            const res = await fetch(`${databaseURL}${path}.json`);
+            return await res.json();
+        }
+
+        async function updateDB(path, data) {
+            await fetch(`${databaseURL}${path}.json`, {
+                method: 'PATCH',
+                body: JSON.stringify(data)
+            });
+            refreshData();
+        }
+
+        // معالجة تسجيل الدخول للمالك والعمال والمشرفين
+        async function handleLogin() {
+            const user = document.getElementById('login-user').value.trim();
+            const pass = document.getElementById('login-pass').value.trim();
+            
+            if(user === "محمد" && pass === "2009") {
+                currentUser = { username: "محمد", role: "owner" };
+                initDashboard();
+                return;
+            }
+            
+            const users = await fetchDB("users");
+            let found = false;
+            if(users) {
+                for(let key in users) {
+                    if(users[key].username === user && users[key].password === pass) {
+                        currentUser = { id: key, ...users[key] };
+                        found = true;
+                        initDashboard();
+                        break;
+                    }
+                }
+            }
+            if(!found) alert("اسم المستخدم أو كلمة المرور غير صحيحة، يرجى مراجعة إدارة المصنع.");
+        }
+
+        function initDashboard() {
+            document.getElementById('login-container').style.display = 'none';
+            document.getElementById('main-container').style.display = 'block';
+            document.getElementById('user-display-name').innerHTML = `<i class="fa-solid fa-user-tie"></i> الحساب: ${currentUser.username}`;
+            
+            if (Notification.permission !== "granted") {
+                Notification.requestPermission();
+            }
+            
+            setupPermissions();
+            refreshData();
+            setInterval(refreshData, 8000); 
+        }
+
+        function setupPermissions() {
+            if(currentUser.role === 'owner') {
+                document.getElementById('stats-bar').style.display = 'grid';
+                document.getElementById('nav-input-data').style.display = 'block';
+                document.getElementById('nav-manage-accounts').style.display = 'block';
+                document.getElementById('nav-archive').style.display = 'block';
+                document.getElementById('nav-settings').style.display = 'block';
+                document.getElementById('search-worker-block').style.display = 'block';
+            } else if(currentUser.role === 'supervisor') {
+                document.getElementById('stats-bar').style.display = 'grid';
+                document.getElementById('nav-input-data').style.display = 'block';
+                document.getElementById('nav-manage-accounts').style.display = 'none';
+                document.getElementById('nav-archive').style.display = 'none';
+                document.getElementById('nav-settings').style.display = 'none';
+                document.getElementById('search-worker-block').style.display = 'block';
+            } else {
+                document.getElementById('nav-input-data').style.display = 'none';
+                document.getElementById('nav-manage-accounts').style.display = 'none';
+                document.getElementById('nav-archive').style.display = 'none';
+                document.getElementById('nav-settings').style.display = 'none';
+                document.getElementById('search-worker-block').style.display = 'none'; // العامل لا يحتاج البحث عن عمال آخرين
+            }
+        }
+
+        async function refreshData() {
+            globalData = await fetchDB() || {};
+            
+            if(globalData.settings) {
+                if(globalData.settings.siteName) {
+                    document.getElementById('nav-brand-name').innerText = globalData.settings.siteName;
+                    document.getElementById('page-title').innerText = globalData.settings.siteName + " - إدارة الإنتاج";
+                }
+                if(globalData.settings.logoBase64) {
+                    const img = document.getElementById('nav-logo');
+                    img.src = globalData.settings.logoBase64;
+                    img.style.display = 'inline-block';
+                }
+                if(globalData.settings.broadcastMessage) {
+                    const bBar = document.getElementById('broadcast-bar');
+                    bBar.innerHTML = `<i class="fa-solid fa-bullhorn animate-bounce"></i> &nbsp; <strong>رسالة الإدارة:</strong> ${globalData.settings.broadcastMessage}`;
+                    bBar.style.display = 'flex';
+                } else {
+                    document.getElementById('broadcast-bar').style.display = 'none';
+                }
+            }
+
+            renderStatsAndTables();
+            renderArchiveButtons();
+            renderSystemUsersTable();
+        }
+
+        function calculateRemaining() {
+            const pieces = parseInt(document.getElementById('prod-pieces').value) || 0;
+            const price = parseFloat(document.getElementById('prod-price-per-piece').value) || 0;
+            const paid = parseFloat(document.getElementById('prod-paid').value) || 0;
+            const total = pieces * price;
+            document.getElementById('prod-remaining').value = Math.max(0, total - paid);
+        }
+
+        // تنظيف مدخلات الفلترة والبحث
+        function clearSearchFilters() {
+            document.getElementById('search-worker').value = "";
+            document.getElementById('search-model').value = "";
+            document.getElementById('search-date').value = "";
+            renderStatsAndTables();
+        }
+
+        // رص البيانات وجداول الفلترة الثلاثية المتقدمة + أزرار الحذف والتعديل
+        function renderStatsAndTables() {
+            const records = (globalData.current_week && globalData.current_week.records) ? globalData.current_week.records : {};
+            const users = globalData.users || {};
+            
+            // جلب قيم الفلاتر والبحث الثلاثي
+            const filterWorker = document.getElementById('search-worker').value.toLowerCase().trim();
+            const filterModel = document.getElementById('search-model').value.toLowerCase().trim();
+            const filterDate = document.getElementById('search-date').value;
+
+            let totalPieces = 0, totalPaid = 0, totalRemaining = 0;
+            let selectHtml = "";
+            
+            for(let uKey in users) {
+                if(users[uKey].role && users[uKey].role.startsWith('worker')) {
+                    selectHtml += `<option value="${uKey}">${users[uKey].username}</option>`;
+                }
+            }
+            document.getElementById('prod-worker-select').innerHTML = selectHtml;
+
+            let workerRowsHtml = "";
+            for(let rKey in records) {
+                const rec = records[rKey];
+                let wName = users[rec.workerId] ? users[rec.workerId].username : "عامل ممسوح";
+
+                // حساب الإجماليات بناءً على الصلاحية قبل تطبيق الفلترة البصرية للجدول
+                if(currentUser.role === 'owner' || currentUser.role === 'supervisor' || rec.workerId === currentUser.id) {
+                    totalPieces += parseInt(rec.totalPieces || 0);
+                    totalPaid += parseFloat(rec.paidAmount || 0);
+                    totalRemaining += parseFloat(rec.remainingAmount || 0);
+                }
+
+                // تطبيق نظام الفلترة الثلاثية
+                if(currentUser.role !== 'owner' && currentUser.role !== 'supervisor' && rec.workerId !== currentUser.id) continue;
+                if(currentUser.role === 'owner' || currentUser.role === 'supervisor') {
+                    if(filterWorker && !wName.toLowerCase().includes(filterWorker)) continue;
+                }
+                if(filterModel && !rec.modelName.toLowerCase().includes(filterModel)) continue;
+                if(filterDate) {
+                    const recDate = rec.timestamp.split('T')[0];
+                    if(recDate !== filterDate) continue;
+                }
+
+                // أزرار الحذف والتعديل تظهر للمالك وللمشرف فقط
+                let controlButtons = "";
+                if(currentUser.role === 'owner' || currentUser.role === 'supervisor') {
+                    controlButtons = `
+                        <button class="btn btn-warning btn-sm" onclick="enableEditMode('${rKey}')"><i class="fa-solid fa-pen-to-square"></i> تعديل</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteProductionRecord('${rKey}')"><i class="fa-solid fa-trash-can"></i> حذف</button>
+                    `;
+                }
+
+                workerRowsHtml += `<tr>
+                    <td><strong>${rec.modelName}</strong> <br><small style="color:var(--text-muted);">العامل: ${wName}</small></td>
+                    <td>${rec.totalPieces} قطعة</td>
+                    <td style="color:var(--success); font-weight:600;">${rec.paidAmount} ج.م</td>
+                    <td style="color:var(--danger); font-weight:600;">${rec.remainingAmount} ج.م</td>
+                    <td>${new Date(rec.timestamp).toLocaleString('ar-EG')}</td>
+                    <td><small>${rec.createdBy}</small></td>
+                    <td>
+                        <div class="actions-cell">
+                            <button class="btn btn-sm" style="background-color:var(--primary-light);" onclick="printInvoice('${rKey}')"><i class="fa-solid fa-print"></i> فاتورة</button>
+                            ${controlButtons}
+                        </div>
+                    </td>
+                </tr>`;
+            }
+
+            document.getElementById('stat-total-pieces').innerText = totalPieces + " قطعة";
+            document.getElementById('stat-total-paid').innerText = totalPaid + " ج.م";
+            document.getElementById('stat-total-remaining').innerText = totalRemaining + " ج.م";
+            document.getElementById('worker-data-rows').innerHTML = workerRowsHtml || "<tr><td colspan='7' style='text-align:center; color:var(--text-muted);'>لا توجد سجلات مطابقة للبحث الحالي.</td></tr>";
+
+            if(currentUser.role === 'worker_group' && currentUser.members) {
+                const groupBlock = document.getElementById('group-info-block');
+                groupBlock.innerHTML = `<i class="fa-solid fa-people-group"></i> <strong>خط إنتاج مشترك:</strong> ( ${currentUser.memberCount} أعضاء ) <br> <strong>الأسماء المقيدة:</strong> ${currentUser.members.join(' - ')}`;
+                groupBlock.style.display = 'block';
+            } else {
+                document.getElementById('group-info-block').style.display = 'none';
+            }
+        }
+
+        // تفعيل وضع التعديل وملء الحقول تلقائياً
+        function enableEditMode(recId) {
+            const rec = globalData.current_week.records[recId];
+            document.getElementById('edit-record-id').value = recId;
+            document.getElementById('prod-worker-select').value = rec.workerId;
+            document.getElementById('prod-model').value = rec.modelName;
+            document.getElementById('prod-pieces').value = rec.totalPieces;
+            
+            // حساب السعر الفردي التقديري للقطعة لتسهيل عملية التعديل
+            const totalPrice = parseFloat(rec.paidAmount) + parseFloat(rec.remainingAmount);
+            const pricePerPiece = rec.totalPieces > 0 ? (totalPrice / rec.totalPieces).toFixed(2) : 0;
+            
+            document.getElementById('prod-price-per-piece').value = pricePerPiece;
+            document.getElementById('prod-paid').value = rec.paidAmount;
+            document.getElementById('prod-remaining').value = rec.remainingAmount;
+
+            document.getElementById('form-tab-title').innerHTML = `<i class="fa-solid fa-pen-to-square"></i> تعديل بيانات جذاذة إنتاج قائمة`;
+            document.getElementById('cancel-edit-btn').style.display = 'inline-flex';
+            
+            // الانتقال إلى تبويب التسجيل تلقائياً
+            switchTab('input-data-tab');
+            document.getElementById('nav-input-data').classList.add('active');
+            document.getElementById('nav-worker-view').classList.remove('active');
+        }
+
+        function cancelEditMode() {
+            document.getElementById('production-form').reset();
+            document.getElementById('edit-record-id').value = "";
+            document.getElementById('form-tab-title').innerHTML = `<i class="fa-solid fa-folder-plus"></i> إدخال جذاذة إنتاج جديدة لعامل أو خط`;
+            document.getElementById('cancel-edit-btn').style.display = 'none';
+            switchTab('worker-view-tab');
+        }
+
+        // حذف حركة إنتاج بشكل مباشر
+        async function deleteProductionRecord(recId) {
+            if(confirm("هل أنت متأكد تماماً من حذف هذا السجل بشكل نهائي؟ لا يمكن التراجع عن هذه العملية.")) {
+                await fetch(`${databaseURL}current_week/records/${recId}.json`, { method: 'DELETE' });
+                alert("تم حذف السجل بنجاح.");
+                refreshData();
+            }
+        }
+
+        // حفظ جذاذة إنتاج جديدة أو حفظ التعديل
+        async function saveProduction(e) {
+            e.preventDefault();
+            const editId = document.getElementById('edit-record-id').value;
+            const workerId = document.getElementById('prod-worker-select').value;
+            const modelName = document.getElementById('prod-model').value;
+            const totalPieces = document.getElementById('prod-pieces').value;
+            const paidAmount = document.getElementById('prod-paid').value;
+            const remainingAmount = document.getElementById('prod-remaining').value;
+
+            const recordData = {
+                workerId,
+                modelName,
+                totalPieces,
+                paidAmount,
+                remainingAmount,
+                timestamp: editId ? globalData.current_week.records[editId].timestamp : new Date().toISOString(),
+                createdBy: currentUser.username
+            };
+
+            const recId = editId ? editId : "rec_" + Date.now();
+            await fetch(`${databaseURL}current_week/records/${recId}.json`, {
+                method: 'PUT',
+                body: JSON.stringify(recordData)
+            });
+
+            if (Notification.permission === "granted") {
+                new Notification("Royal Stitch - تحديث حساب", {
+                    body: `تم تسجيل/تعديل الموديل ${modelName} بـ ${totalPieces} قطعة لحساب العمال.`
+                });
+            }
+
+            alert(editId ? "تم تعديل وحفظ الحساب بنجاح." : "تم إدراج القطع بنجاح وتحديث الحساب.");
+            cancelEditMode();
+        }
+
+        // بناء جدول عرض الحسابات لتسهيل عملية حذف الأكونتات للمالك
+        function renderSystemUsersTable() {
+            const users = globalData.users || {};
+            let html = "";
+            for(let uKey in users) {
+                const u = users[uKey];
+                let roleText = u.role === 'supervisor' ? 'مشرف نظام' : (u.role === 'worker_group' ? 'مجموعة إنتاج' : 'عامل فردي');
+                let membersText = u.members ? u.members.join(', ') : '-';
+                
+                html += `<tr>
+                    <td><strong>${u.username}</strong></td>
+                    <td><span class="user-badge">${roleText}</span></td>
+                    <td><code>${u.password}</code></td>
+                    <td><small>${membersText}</small></td>
+                    <td>
+                        <button class="btn btn-danger btn-sm" onclick="deleteUserAccount('${uKey}')"><i class="fa-solid fa-user-xmark"></i> حذف الأكونت</button>
+                    </td>
+                </tr>`;
+            }
+            document.getElementById('system-users-rows').innerHTML = html || "<tr><td colspan='5' style='text-align:center;'>لا توجد حسابات مضافة حالياً.</td></tr>";
+        }
+
+        // حذف حساب عامل أو مشرف نهائياً
+        async function deleteUserAccount(userKey) {
+            if(confirm("هل تريد فعلاً حذف هذا الأكونت نهائياً ومنعه من دخول النظام؟")) {
+                await fetch(`${databaseURL}users/${userKey}.json`, { method: 'DELETE' });
+                alert("تم حذف الأكونت بنجاح من النظام.");
+                refreshData();
+            }
+        }
+
+        async function createUserAccount() {
+            const role = document.getElementById('acc-role').value;
+            const username = document.getElementById('acc-username').value.trim();
+            const password = document.getElementById('acc-password').value.trim();
+            const membersRaw = document.getElementById('acc-members').value;
+
+            if(!username || !password) { alert("يرجى ملء خانة الاسم وكلمة المرور بالكامل."); return; }
+
+            let payload = { username, password, role };
+            if(role === 'worker_group') {
+                const arr = membersRaw.split(',').map(m => m.trim()).filter(m => m !== "");
+                payload.members = arr;
+                payload.memberCount = arr.length;
+            }
+
+            await fetch(`${databaseURL}users/user_${Date.now()}.json`, {
+                method: 'PUT',
+                body: JSON.stringify(payload)
+            });
+            alert(`تم تفعيل الحساب بنجاح باسم [ ${username} ].`);
+            document.getElementById('acc-username').value = "";
+            document.getElementById('acc-password').value = "";
+            document.getElementById('acc-members').value = "";
+            refreshData();
+        }
+
+        async function closeAndArchiveWeek() {
+            const currentWeekData = globalData.current_week;
+            if(!currentWeekData || !currentWeekData.records) { alert("لا توجد سجلات إنتاج جارية في الأسبوع الحالي لقفلها!"); return; }
+            
+            const weekLabel = prompt("أدخل اسم أو رقم الأسبوع لتمييز الزر بالأرشيف (مثال: أسبوع يونيو الأول 2026):");
+            if(!weekLabel) return;
+
+            const archiveId = "archive_" + Date.now();
+            await fetch(`${databaseURL}archived_weeks/${archiveId}.json`, {
+                method: 'PUT',
+                body: JSON.stringify({ weekName: weekLabel, archiveDate: new Date().toISOString().split('T')[0], records: currentWeekData.records })
+            });
+
+            await fetch(`${databaseURL}current_week.json`, { method: 'DELETE' });
+            alert(`تم حفظ الأسبوع وتجميده بنجاح وتوليد زر الأرشفة باسم [ ${weekLabel} ].`);
+            refreshData();
+        }
+
+        function renderArchiveButtons() {
+            const archives = globalData.archived_weeks;
+            let html = "";
+            if(archives) {
+                for(let key in archives) {
+                    html += `<button class="btn" style="background-color:var(--primary-light);" onclick="viewArchiveDetails('${key}')"><i class="fa-solid fa-folder-open"></i> أرشفة: ${archives[key].weekName}</button>`;
+                }
+            }
+            document.getElementById('weeks-buttons-container').innerHTML = html || "<small style='color:var(--text-muted);'>لا يوجد أسابيع مؤرشفة سابقة حتى الآن.</small>";
+        }
+
+        function viewArchiveDetails(key) {
+            const archive = globalData.archived_weeks[key];
+            const count = Object.keys(archive.records).length;
+            alert(`📂 ملف أسبوعي مؤرشف: [ ${archive.weekName} ]\nتاريخ الإغلاق والجرد: ${archive.archiveDate}\nعدد السجلات الإنتاجية المسجلة به: ${count} حركة.`);
+        }
+
+        function exportCurrentWeekToExcel() {
+            const records = (globalData.current_week && globalData.current_week.records) ? globalData.current_week.records : {};
+            const users = globalData.users || {};
+            let dataArr = [];
+
+            for(let k in records) {
+                const rec = records[k];
+                const wName = users[rec.workerId] ? users[rec.workerId].username : "ممسوح";
+                dataArr.push({
+                    "اسم العامل / المجموعة المشتركة": wName,
+                    "الموديل التشغيلي": rec.modelName,
+                    "القطع المنجزة": rec.totalPieces + " قطعة",
+                    "الواصل (المدفوع ج.م)": rec.paidAmount,
+                    "المتبقي للحساب (ج.م)": rec.remainingAmount,
+                    "تاريخ ورصد الوقت بالدقيقة": new Date(rec.timestamp).toLocaleString('ar-EG'),
+                    "اسم المسؤول عن الإدخال": rec.createdBy
+                });
+            }
+
+            if(dataArr.length === 0) { alert("لا توجد سجلات حالية لتصديرها إلى ملف Excel 2016!"); return; }
+
+            const worksheet = XLSX.utils.json_to_sheet(dataArr);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "كشف حسابات الإنتاج الجاري");
+            XLSX.writeFile(workbook, `RoyalStitch_تقرير_Excel2016_${new Date().toISOString().split('T')[0]}.xlsx`);
+        }
+
+        function printInvoice(recId) {
+            const rec = globalData.current_week.records[recId];
+            const users = globalData.users || {};
+            const wName = users[rec.workerId] ? users[rec.workerId].username : "مجهول";
+            const siteName = document.getElementById('nav-brand-name').innerText;
+            
+            const printArea = document.getElementById('print-area');
+            printArea.innerHTML = `
+                <div style="direction:rtl; padding:25px; font-family:sans-serif; border:2px dashed #333; max-width:380px; margin:20px auto; background:#fff; color:#000;">
+                    <h2 style="text-align:center; margin:0 0 5px 0; font-size:22px; letter-spacing:1px;">${siteName}</h2>
+                    <p style="text-align:center; font-size:12px; margin:0 0 15px 0; font-style:italic;">فاتورة تصفية وإثبات إنتاج قطعة</p>
+                    <div style="border-bottom:1px solid #000; margin-bottom:10px;"></div>
+                    <p style="margin:6px 0;"><strong>اسم المستلم / الخط:</strong> ${wName}</p>
+                    <p style="margin:6px 0;"><strong>الموديل التشغيلي:</strong> ${rec.modelName}</p>
+                    <p style="margin:6px 0;"><strong>القطع المنجزة المسجلة:</strong> ${rec.totalPieces} قطعة</p>
+                    <p style="margin:6px 0; color:#2e7d32;"><strong>الواصل المالي المدفوع:</strong> ${rec.paidAmount} ج.م</p>
+                    <p style="margin:8px 0; font-size:16px; border-top:1px dashed #000; padding-top:5px; color:#d32f2f;"><strong>المتبقي المؤجل فوق للحساب:</strong> ${rec.remainingAmount} ج.م</p>
+                    <div style="border-bottom:1px solid #000; margin-top:15px; margin-bottom:10px;"></div>
+                    <p style="font-size:11px; text-align:center; margin:2px 0;">تاريخ وتوقيت الرصد: ${new Date(rec.timestamp).toLocaleString('ar-EG')}</p>
+                    <p style="font-size:11px; text-align:center; margin:2px 0;">المسؤول عن تسوية الحساب: ${rec.createdBy}</p>
+                </div>
+            `;
+            window.print();
+        }
+
+        function saveSettings() {
+            const siteName = document.getElementById('set-site-name').value;
+            const broadcastMessage = document.getElementById('set-broadcast').value;
+            const logoFile = document.getElementById('set-logo-file').files[0];
+
+            let payload = { siteName, broadcastMessage };
+
+            if(logoFile) {
+                const reader = new FileReader();
+                reader.onload = async function(e) {
+                    payload.logoBase64 = e.target.result; 
+                    await updateDB("settings", payload);
+                    alert("تم حفظ وتحديث الإعدادات وتشفير اللوجو داخلياً.");
+                }
+                reader.readAsDataURL(logoFile);
+            } else {
+                if(globalData.settings && globalData.settings.logoBase64) {
+                    payload.logoBase64 = globalData.settings.logoBase64;
+                }
+                updateDB("settings", payload);
+                alert("تم تحديث اسم المصنع والرسالة التنبيهية بنجاح للعمال.");
+            }
+        }
+
+        function toggleGroupInput() {
+            const role = document.getElementById('acc-role').value;
+            document.getElementById('group-members-field').style.display = (role === 'worker_group') ? 'block' : 'none';
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-section').forEach(t => t.classList.remove('active-tab'));
+            document.querySelectorAll('.tab-link').forEach(l => l.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active-tab');
+            
+            // إصلاح توافق الـ Event للمتصفحات المختلفة
+            if (event && event.currentTarget) {
+                event.currentTarget.classList.add('active');
+            }
+        }
+
+        function handleLogout() {
+            currentUser = null;
+            document.getElementById('main-container').style.display = 'none';
+            document.getElementById('login-container').style.display = 'block';
+            document.getElementById('login-user').value = "";
+            document.getElementById('login-pass').value = "";
+        }
+    </script>
+</body>
+</html>
